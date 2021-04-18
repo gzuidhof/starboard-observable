@@ -9,6 +9,7 @@ import { getRuntime } from "./runtime";
 import { ObservableObserver, ObservableInterpreter, ObservableVariable } from "./types";
 import { injectInspectorStyles } from "./global";
 import { hasParentWithId } from "./util";
+import { PinOffIcon, PinOnIcon } from "./icons";
 
 declare global {
     interface Window {
@@ -36,7 +37,7 @@ export function registerObservablePlugin() {
     // const compile = new compiler.Compiler() as ObservableCompiler;
     const observableRuntime = getRuntime();
     const main = observableRuntime.module();
-    const interpreter = new ucompiler.Interpreter({ module: main}) as ObservableInterpreter;
+    const interpreter = new ucompiler.Interpreter({ module: main, observeViewofValues: false}) as ObservableInterpreter;
 
     class ObservableCellHandler {
         private elements!: CellElements;
@@ -60,26 +61,48 @@ export function registerObservablePlugin() {
             this.changeListener = () => {
                 if (this.hasUnevaluatedChanges && this.lastEvaluatedContent === this.cell.textContent) {
                     this.hasUnevaluatedChanges = false;
+                    // TODO: move this check elsewhere
+                    if (this.elements) {
+                        this.elements.bottomElement.classList.toggle("is-empty", !this.cell.textContent);
+                        this.elements.bottomControlsElement.classList.toggle("is-empty", !this.cell.textContent);
+                    }
                     this.renderControls();
                 }
                 else if (!this.hasUnevaluatedChanges && this.lastEvaluatedContent !== this.cell.textContent) {
                     this.hasUnevaluatedChanges = true;
+                    // TODO: move this check elsewhere
+                    if (this.elements) {
+                        this.elements.bottomElement.classList.toggle("is-empty", !this.cell.textContent);
+                        this.elements.bottomControlsElement.classList.toggle("is-empty", !this.cell.textContent);
+                    }
                     this.renderControls();
                 }
             };
+
+            this.changeListener();
         }
 
         private renderControls() {
+            if (!this.elements) return;
             let buttons: ControlButton[] = [];
-
-            if (this.hasUnevaluatedChanges) {
-                const runButton: ControlButton = {
-                    icon: icons.PlayCircleIcon,
-                    tooltip: "Evaluate Cell",
-                    callback: () => this.runtime.controls.emit({id: this.cell.id, type: "RUN_CELL"}),
+    
+            const isPinned = this.elements.bottomElement.classList.contains("pinned");
+            const pinButton: ControlButton = {
+                icon: isPinned ? PinOnIcon : PinOffIcon,
+                tooltip: isPinned ? "Unpin (hide when cell is not focused)" : "Pin (display when cell is not focused)",
+                callback: () => {
+                    this.elements.bottomElement.classList.toggle("pinned")
+                    this.elements.bottomControlsElement.classList.toggle("pinned")
+                    this.renderControls();
                 }
-                buttons = [runButton];
             }
+            const runButton: ControlButton = {
+                icon: icons.PlayCircleIcon,
+                tooltip: "Evaluate Cell",
+                callback: () => this.runtime.controls.emit({id: this.cell.id, type: "RUN_CELL"}),
+            }
+            buttons = [pinButton, runButton];
+            
             lithtml.render(cellControlsTemplate({ buttons }), this.elements.bottomControlsElement);
         }
 
@@ -110,6 +133,11 @@ export function registerObservablePlugin() {
                     }
                 }
             });
+
+            if (this.elements) {
+                this.elements.bottomElement.classList.toggle("is-empty", !this.cell.textContent);
+                this.elements.bottomControlsElement.classList.toggle("is-empty", !this.cell.textContent);
+            }
         }
 
         private cleanupVariables() {
@@ -122,11 +150,9 @@ export function registerObservablePlugin() {
         }
 
         async run() {
+            this.renderControls();
             this.lastEvaluatedContent = this.cell.textContent;
-            if (this.hasUnevaluatedChanges) {
-                this.hasUnevaluatedChanges = false;
-                this.renderControls();
-            }
+            this.hasUnevaluatedChanges = false;
 
             this.cleanupVariables();
             if (this.cell.textContent === "") {
