@@ -1,6 +1,6 @@
 {
   "name": "starboard-observable",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Observable-like cell support in Starboard Notebook",
   "main": "dist/starboard-observable.js",
   "module": "dist/starboard-observable.js",
@@ -36,11 +36,11 @@
     "rollup": "^2.45.1",
     "rollup-plugin-typescript2": "^0.30.0",
     "source-map-loader": "^2.0.1",
-    "starboard-notebook": "^0.8.2",
+    "starboard-notebook": "^0.11.1",
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "@alex.garcia/unofficial-observablehq-compiler": "^0.6.0-alpha.2",
-    "@observablehq/runtime": "^4.8.2"
+    "@alex.garcia/unofficial-observablehq-compiler": "^0.6.0-alpha.9",
+    "@observablehq/runtime": "^4.12.0"
   }
 }

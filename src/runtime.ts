@@ -6,5 +6,5 @@ import { ObservableRuntime } from "./types";
 const runtime = new Runtime();
 
 export function getRuntime(): ObservableRuntime {
-    return runtime;
+  return runtime;
 }
