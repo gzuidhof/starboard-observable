@@ -5,7 +5,7 @@ Observable cells in Starboard Notebook. Why not?
 ## Usage
 
 ```javascript
-import {plugin} from "https://cdn.skypack.dev/starboard-observable";;
+import {plugin} from "https://cdn.skypack.dev/starboard-observable";
 runtime.controls.registerPlugin(plugin);
 ```
 

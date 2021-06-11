@@ -104,7 +104,7 @@ function registerObservablePlugin() {
       const runButton: ControlButton = {
         icon: "bi bi-play-circle",
         tooltip: "Evaluate Cell",
-        callback: () => this.runtime.controls.emit({ id: this.cell.id, type: "RUN_CELL" }),
+        callback: () => this.runtime.controls.runCell({ id: this.cell.id }),
       };
       buttons = [pinButton, runButton];
 
